@@ -15,8 +15,7 @@ export default async function handler(req, res) {
   try {
     const { customerData, cartData, totalAmount, proofImage } = req.body;
 
-    // GANTI NAMA VARIABLE INI! 👇
-    const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL; // Bukan DISCORD_WEBHOOK_ORDER!
+    const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
     if (!DISCORD_WEBHOOK_URL) {
       console.error('Webhook URL tidak ditemukan di environment variables');
@@ -68,46 +67,58 @@ export default async function handler(req, res) {
       });
     }
 
-    const discordPayload = {
-      content: '🔔 **NEW ORDER ALERT!**',
-      embeds: [embed]
-    };
-
-    // Kirim tanpa file dulu (simplified version)
-    const response = await fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(discordPayload)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Discord API Error:', errorText);
-      throw new Error(`Discord webhook gagal: ${response.status}`);
-    }
-
-    console.log('✅ Berhasil kirim ke Discord ORDER');
-
-    // Jika ada bukti transfer, kirim sebagai message terpisah
+    // Jika ada bukti transfer, kirim dengan FormData (embed + file sekaligus)
     if (proofImage) {
       const base64Data = proofImage.split(',')[1];
       const buffer = Buffer.from(base64Data, 'base64');
       
-      // Create FormData for file upload
       const FormData = require('form-data');
       const form = new FormData();
       
-      form.append('content', '📸 **Bukti Transfer:**');
+      const payload = {
+        content: '🔔 **NEW ORDER ALERT!**',
+        embeds: [embed]
+      };
+      
+      form.append('payload_json', JSON.stringify(payload));
       form.append('file', buffer, {
         filename: `bukti_${Date.now()}.jpg`,
         contentType: 'image/jpeg'
       });
 
-      await fetch(DISCORD_WEBHOOK_URL, {
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
         method: 'POST',
         body: form,
         headers: form.getHeaders()
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Discord API Error:', errorText);
+        throw new Error(`Discord webhook gagal: ${response.status}`);
+      }
+
+      console.log('✅ Berhasil kirim ke Discord ORDER (dengan bukti transfer)');
+    } else {
+      // Jika tidak ada bukti, kirim embed saja
+      const discordPayload = {
+        content: '🔔 **NEW ORDER ALERT!**',
+        embeds: [embed]
+      };
+
+      const response = await fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(discordPayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Discord API Error:', errorText);
+        throw new Error(`Discord webhook gagal: ${response.status}`);
+      }
+
+      console.log('✅ Berhasil kirim ke Discord ORDER (tanpa bukti transfer)');
     }
 
     return res.status(200).json({ 
