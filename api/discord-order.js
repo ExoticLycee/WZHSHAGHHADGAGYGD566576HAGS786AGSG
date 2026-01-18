@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -14,25 +13,20 @@ export default async function handler(req, res) {
 
   try {
     const { customerData, cartData, totalAmount, proofImage } = req.body;
-
     const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
     if (!DISCORD_WEBHOOK_URL) {
-      console.error('Webhook URL tidak ditemukan');
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Webhook URL tidak dikonfigurasi' 
-      });
+      return res.status(500).json({ success: false, error: 'Webhook not configured' });
     }
 
-    console.log('📤 Mengirim ke webhook ORDER...');
+    console.log('📤 Sending to ORDER webhook...');
 
-    // Format items untuk embed
+    // Format items
     const itemsText = cartData.map(item => 
       `${item.quantity}x **${item.name}** - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`
     ).join('\n');
 
-    // Buat embed Discord
+    // Base embed
     const embed = {
       title: '🛒 PEMBELIAN BARU - WarpahExploits',
       color: 0x00ff88,
@@ -54,9 +48,7 @@ export default async function handler(req, res) {
         }
       ],
       timestamp: new Date().toISOString(),
-      footer: {
-        text: 'WarpahExploits Order System'
-      }
+      footer: { text: 'WarpahExploits Order System' }
     };
 
     if (customerData.note) {
@@ -67,114 +59,95 @@ export default async function handler(req, res) {
       });
     }
 
-    // STEP 1: Kirim embed dulu
-    const embedPayload = {
-      content: '🔔 **NEW ORDER ALERT!**',
-      embeds: [embed]
-    };
-
-    const embedResponse = await fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(embedPayload)
-    });
-
-    if (!embedResponse.ok) {
-      const errorText = await embedResponse.text();
-      console.error('❌ Discord Embed Error:', errorText);
-      throw new Error(`Discord embed failed: ${embedResponse.status}`);
-    }
-
-    console.log('✅ Embed ORDER berhasil dikirim');
-
-    // STEP 2: Kirim bukti transfer sebagai message terpisah
+    // Jika ada bukti, upload ke cloudinary dulu atau embed sebagai attachment
     if (proofImage) {
+      // Method 1: Embed image di Discord embed (inline)
+      embed.image = {
+        url: 'attachment://proof.jpg'
+      };
+
       try {
-        console.log('📸 Memproses bukti transfer...');
-        
+        // Menggunakan node-fetch dengan form-data
         const FormData = require('form-data');
         const form = new FormData();
-        
-        // Extract base64 data - support berbagai format
-        let base64Data = proofImage;
-        if (base64Data.includes(',')) {
-          base64Data = base64Data.split(',')[1];
+
+        // Parse base64
+        const matches = proofImage.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+          throw new Error('Invalid base64 format');
         }
-        
-        // Detect image type
-        let mimeType = 'image/jpeg';
-        let extension = 'jpg';
-        if (proofImage.includes('data:image/png')) {
-          mimeType = 'image/png';
-          extension = 'png';
-        } else if (proofImage.includes('data:image/jpg')) {
-          mimeType = 'image/jpeg';
-          extension = 'jpg';
-        } else if (proofImage.includes('data:image/jpeg')) {
-          mimeType = 'image/jpeg';
-          extension = 'jpg';
-        }
-        
-        console.log(`🖼️ Image type detected: ${mimeType}`);
-        
-        // Convert to buffer
-        const buffer = Buffer.from(base64Data, 'base64');
-        console.log(`📦 Buffer size: ${buffer.length} bytes`);
-        
-        // Validasi buffer tidak kosong
-        if (buffer.length === 0) {
-          throw new Error('Buffer kosong - base64 tidak valid');
-        }
-        
-        // Append file dengan content message
-        form.append('content', '📸 **Bukti Transfer:**');
-        form.append('file', buffer, {
-          filename: `order_${Date.now()}.${extension}`,
-          contentType: mimeType
+
+        const imageBuffer = Buffer.from(matches[2], 'base64');
+        console.log(`📦 Image buffer size: ${imageBuffer.length} bytes`);
+
+        // Build payload
+        const payload = {
+          content: '🔔 **NEW ORDER ALERT!**',
+          embeds: [embed]
+        };
+
+        // Append to form
+        form.append('payload_json', JSON.stringify(payload));
+        form.append('files[0]', imageBuffer, {
+          filename: 'proof.jpg',
+          contentType: 'image/jpeg'
         });
 
-        console.log('📤 Mengirim bukti transfer ke Discord...');
-
-        // Kirim ke Discord
-        const imageResponse = await fetch(DISCORD_WEBHOOK_URL, {
+        // Send to Discord
+        const response = await fetch(DISCORD_WEBHOOK_URL, {
           method: 'POST',
-          body: form
+          body: form,
+          headers: form.getHeaders()
         });
 
-        if (!imageResponse.ok) {
-          const errorText = await imageResponse.text();
-          console.error('❌ Discord Image Error:', errorText);
-          throw new Error(`Upload image failed: ${imageResponse.status}`);
+        const responseText = await response.text();
+        console.log('Discord response:', response.status, responseText);
+
+        if (!response.ok) {
+          throw new Error(`Discord error: ${response.status} - ${responseText}`);
         }
 
-        console.log('✅ Bukti transfer ORDER berhasil dikirim!');
+        console.log('✅ ORDER sent with proof image!');
+        return res.status(200).json({ success: true, message: 'Order sent with image' });
 
       } catch (imageError) {
-        console.error('❌ Error upload bukti transfer:', imageError.message);
+        console.error('❌ Image upload failed:', imageError);
         
-        // Kirim notifikasi bahwa bukti gagal
-        const errorNotif = {
-          content: '⚠️ **PERINGATAN:** Bukti transfer gagal diupload. Mohon minta customer kirim ulang bukti via WhatsApp.'
+        // Fallback: Send without image
+        delete embed.image;
+        const fallbackPayload = {
+          content: '🔔 **NEW ORDER ALERT!** ⚠️ *Bukti transfer gagal diupload - lihat WhatsApp*',
+          embeds: [embed]
         };
 
         await fetch(DISCORD_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(errorNotif)
+          body: JSON.stringify(fallbackPayload)
         });
+
+        console.log('⚠️ Sent without image (fallback)');
       }
+    } else {
+      // No proof image
+      const payload = {
+        content: '🔔 **NEW ORDER ALERT!**',
+        embeds: [embed]
+      };
+
+      await fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('✅ ORDER sent without image');
     }
 
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Order berhasil dikirim ke Discord' 
-    });
+    return res.status(200).json({ success: true, message: 'Order sent' });
 
   } catch (error) {
-    console.error('❌ Error di discord-order.js:', error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.message 
-    });
+    console.error('❌ Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 }
