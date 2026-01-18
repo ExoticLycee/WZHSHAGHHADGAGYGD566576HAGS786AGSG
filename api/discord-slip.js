@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     console.log('📤 Sending to SLIP webhook...');
 
-    // Base embed
+    // Base embed (TANPA nomor HP dan email - sesuai permintaan)
     const embed = {
       title: '💳 TRANSAKSI SELESAI',
       description: '✅ Pembayaran telah dikonfirmasi',
@@ -42,92 +42,93 @@ export default async function handler(req, res) {
       footer: { text: 'Transfer Slip - WarpahExploits' }
     };
 
-    if (proofImage) {
-      embed.image = {
-        url: 'attachment://slip.jpg'
-      };
+    // KIRIM EMBED DULU
+    const initialPayload = {
+      content: '✅ **TRANSAKSI DONE**',
+      embeds: [embed]
+    };
 
+    const embedResponse = await fetch(DISCORD_WEBHOOK_SLIP, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(initialPayload)
+    });
+
+    if (!embedResponse.ok) {
+      const errorText = await embedResponse.text();
+      console.error('❌ SLIP Embed failed:', errorText);
+      throw new Error(`Embed failed: ${embedResponse.status}`);
+    }
+
+    console.log('✅ Embed SLIP sent successfully');
+
+    // KIRIM GAMBAR TERPISAH
+    if (proofImage) {
       try {
-        const FormData = require('form-data');
-        const form = new FormData();
+        console.log('📸 Processing SLIP proof image...');
 
         // Parse base64
-        const matches = proofImage.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-        if (!matches || matches.length !== 3) {
-          throw new Error('Invalid base64 format');
+        let base64Data = proofImage;
+        if (base64Data.includes(',')) {
+          base64Data = base64Data.split(',')[1];
         }
 
-        const imageBuffer = Buffer.from(matches[2], 'base64');
-        console.log(`📦 SLIP image buffer size: ${imageBuffer.length} bytes`);
+        // Convert to buffer
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        console.log(`📦 SLIP Image size: ${imageBuffer.length} bytes (${(imageBuffer.length / 1024).toFixed(2)} KB)`);
 
-        // Build payload
-        const payload = {
-          content: '✅ **TRANSAKSI DONE**',
-          embeds: [embed]
-        };
+        if (imageBuffer.length === 0) {
+          throw new Error('Image buffer is empty');
+        }
 
-        // Append to form
-        form.append('payload_json', JSON.stringify(payload));
-        form.append('files[0]', imageBuffer, {
-          filename: 'slip.jpg',
-          contentType: 'image/jpeg'
+        // Build form
+        const FormData = require('form-data');
+        const form = new FormData();
+        
+        form.append('content', '📸 **BUKTI TRANSFER:**');
+        form.append('file', imageBuffer, {
+          filename: `slip_${Date.now()}.jpg`,
+          contentType: 'image/jpeg',
+          knownLength: imageBuffer.length
         });
 
-        // Send to Discord
-        const response = await fetch(DISCORD_WEBHOOK_SLIP, {
+        console.log('📤 Uploading SLIP image to Discord...');
+
+        const imageResponse = await fetch(DISCORD_WEBHOOK_SLIP, {
           method: 'POST',
           body: form,
           headers: form.getHeaders()
         });
 
-        const responseText = await response.text();
-        console.log('Discord SLIP response:', response.status, responseText);
-
-        if (!response.ok) {
-          throw new Error(`Discord error: ${response.status} - ${responseText}`);
+        const responseText = await imageResponse.text();
+        
+        if (!imageResponse.ok) {
+          console.error('❌ SLIP Image upload failed:', responseText);
+          throw new Error(`Image upload failed: ${imageResponse.status}`);
         }
 
-        console.log('✅ SLIP sent with proof image!');
-        return res.status(200).json({ success: true, message: 'Slip sent with image' });
+        console.log('✅ SLIP Image uploaded successfully!');
 
       } catch (imageError) {
-        console.error('❌ SLIP image upload failed:', imageError);
+        console.error('❌ Error uploading SLIP image:', imageError.message);
         
-        // Fallback: Send without image
-        delete embed.image;
-        const fallbackPayload = {
-          content: '✅ **TRANSAKSI DONE** ⚠️ *Bukti transfer gagal diupload*',
-          embeds: [embed]
+        // Send error notification
+        const errorPayload = {
+          content: `⚠️ **PERINGATAN:** Bukti transfer SLIP gagal diupload!\n🔴 Error: ${imageError.message}`
         };
 
         await fetch(DISCORD_WEBHOOK_SLIP, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(fallbackPayload)
+          body: JSON.stringify(errorPayload)
         });
-
-        console.log('⚠️ SLIP sent without image (fallback)');
       }
-    } else {
-      // No proof image
-      const payload = {
-        content: '✅ **TRANSAKSI DONE**',
-        embeds: [embed]
-      };
-
-      await fetch(DISCORD_WEBHOOK_SLIP, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      console.log('✅ SLIP sent without image');
     }
 
-    return res.status(200).json({ success: true, message: 'Slip sent' });
+    return res.status(200).json({ success: true, message: 'Slip sent successfully' });
 
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('❌ Critical error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 }
