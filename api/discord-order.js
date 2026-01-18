@@ -26,17 +26,17 @@ export default async function handler(req, res) {
       `${item.quantity}x **${item.name}** - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`
     ).join('\n');
 
-    // Format WhatsApp link dengan chat otomatis
-    const waLink = `https://wa.me/${customerData.phone}`;
+    // Format WhatsApp link customer dengan chat otomatis
+    const customerWaLink = `https://wa.me/${customerData.phone}`;
 
-    // Base embed dengan link WhatsApp
+    // Base embed dengan link WhatsApp customer
     const embed = {
       title: '🛒 PEMBELIAN BARU - WarpahExploits',
       color: 0x00ff88,
       fields: [
         {
           name: '👤 Data Customer',
-          value: `**Nama:** ${customerData.name}\n**WhatsApp:** [${customerData.phone}](${waLink}) 📱\n**Email:** ${customerData.email || '-'}`,
+          value: `**Nama:** ${customerData.name}\n**WhatsApp:** [${customerData.phone}](${customerWaLink}) 📱\n**Email:** ${customerData.email || '-'}`,
           inline: false
         },
         {
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
 
     // KIRIM EMBED DULU (tanpa gambar)
     const initialPayload = {
-      content: `🔔 **NEW ORDER ALERT!**\n💬 [Chat Customer di WhatsApp](${waLink})`,
+      content: `🔔 **NEW ORDER ALERT!**\n💬 [Chat Customer di WhatsApp](${customerWaLink})`,
       embeds: [embed]
     };
 
@@ -134,7 +134,7 @@ export default async function handler(req, res) {
         
         // Send error notification
         const errorPayload = {
-          content: `⚠️ **PERINGATAN:** Bukti transfer gagal diupload!\n🔴 Error: ${imageError.message}\n💬 Silakan minta customer kirim ulang via [WhatsApp](${waLink})`
+          content: `⚠️ **PERINGATAN:** Bukti transfer gagal diupload!\n🔴 Error: ${imageError.message}\n💬 Silakan minta customer kirim ulang via [WhatsApp](${customerWaLink})`
         };
 
         await fetch(DISCORD_WEBHOOK_URL, {
