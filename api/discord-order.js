@@ -26,14 +26,17 @@ export default async function handler(req, res) {
       `${item.quantity}x **${item.name}** - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`
     ).join('\n');
 
-    // Base embed
+    // Format WhatsApp link dengan chat otomatis
+    const waLink = `https://wa.me/${customerData.phone}`;
+
+    // Base embed dengan link WhatsApp
     const embed = {
       title: '🛒 PEMBELIAN BARU - WarpahExploits',
       color: 0x00ff88,
       fields: [
         {
           name: '👤 Data Customer',
-          value: `**Nama:** ${customerData.name}\n**WhatsApp:** ${customerData.phone}\n**Email:** ${customerData.email || '-'}`,
+          value: `**Nama:** ${customerData.name}\n**WhatsApp:** [${customerData.phone}](${waLink}) 📱\n**Email:** ${customerData.email || '-'}`,
           inline: false
         },
         {
@@ -59,95 +62,93 @@ export default async function handler(req, res) {
       });
     }
 
-    // Jika ada bukti, upload ke cloudinary dulu atau embed sebagai attachment
-    if (proofImage) {
-      // Method 1: Embed image di Discord embed (inline)
-      embed.image = {
-        url: 'attachment://proof.jpg'
-      };
+    // KIRIM EMBED DULU (tanpa gambar)
+    const initialPayload = {
+      content: `🔔 **NEW ORDER ALERT!**\n💬 [Chat Customer di WhatsApp](${waLink})`,
+      embeds: [embed]
+    };
 
+    const embedResponse = await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(initialPayload)
+    });
+
+    if (!embedResponse.ok) {
+      const errorText = await embedResponse.text();
+      console.error('❌ Embed failed:', errorText);
+      throw new Error(`Embed failed: ${embedResponse.status}`);
+    }
+
+    console.log('✅ Embed ORDER sent successfully');
+
+    // KIRIM GAMBAR TERPISAH (lebih reliable)
+    if (proofImage) {
       try {
-        // Menggunakan node-fetch dengan form-data
-        const FormData = require('form-data');
-        const form = new FormData();
+        console.log('📸 Processing proof image...');
 
         // Parse base64
-        const matches = proofImage.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-        if (!matches || matches.length !== 3) {
-          throw new Error('Invalid base64 format');
+        let base64Data = proofImage;
+        if (base64Data.includes(',')) {
+          base64Data = base64Data.split(',')[1];
         }
 
-        const imageBuffer = Buffer.from(matches[2], 'base64');
-        console.log(`📦 Image buffer size: ${imageBuffer.length} bytes`);
+        // Convert to buffer
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        console.log(`📦 Image size: ${imageBuffer.length} bytes (${(imageBuffer.length / 1024).toFixed(2)} KB)`);
 
-        // Build payload
-        const payload = {
-          content: '🔔 **NEW ORDER ALERT!**',
-          embeds: [embed]
-        };
+        if (imageBuffer.length === 0) {
+          throw new Error('Image buffer is empty');
+        }
 
-        // Append to form
-        form.append('payload_json', JSON.stringify(payload));
-        form.append('files[0]', imageBuffer, {
-          filename: 'proof.jpg',
-          contentType: 'image/jpeg'
+        // Gunakan fetch dengan FormData yang kompatibel
+        const FormData = require('form-data');
+        const form = new FormData();
+        
+        form.append('content', '📸 **BUKTI TRANSFER:**');
+        form.append('file', imageBuffer, {
+          filename: `proof_${Date.now()}.jpg`,
+          contentType: 'image/jpeg',
+          knownLength: imageBuffer.length
         });
 
-        // Send to Discord
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
+        console.log('📤 Uploading image to Discord...');
+
+        const imageResponse = await fetch(DISCORD_WEBHOOK_URL, {
           method: 'POST',
           body: form,
           headers: form.getHeaders()
         });
 
-        const responseText = await response.text();
-        console.log('Discord response:', response.status, responseText);
-
-        if (!response.ok) {
-          throw new Error(`Discord error: ${response.status} - ${responseText}`);
+        const responseText = await imageResponse.text();
+        
+        if (!imageResponse.ok) {
+          console.error('❌ Image upload failed:', responseText);
+          throw new Error(`Image upload failed: ${imageResponse.status}`);
         }
 
-        console.log('✅ ORDER sent with proof image!');
-        return res.status(200).json({ success: true, message: 'Order sent with image' });
+        console.log('✅ Image uploaded successfully!');
 
       } catch (imageError) {
-        console.error('❌ Image upload failed:', imageError);
+        console.error('❌ Error uploading image:', imageError.message);
         
-        // Fallback: Send without image
-        delete embed.image;
-        const fallbackPayload = {
-          content: '🔔 **NEW ORDER ALERT!** ⚠️ *Bukti transfer gagal diupload - lihat WhatsApp*',
-          embeds: [embed]
+        // Send error notification
+        const errorPayload = {
+          content: `⚠️ **PERINGATAN:** Bukti transfer gagal diupload!\n🔴 Error: ${imageError.message}\n💬 Silakan minta customer kirim ulang via [WhatsApp](${waLink})`
         };
 
         await fetch(DISCORD_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(fallbackPayload)
+          body: JSON.stringify(errorPayload)
         });
-
-        console.log('⚠️ Sent without image (fallback)');
       }
-    } else {
-      // No proof image
-      const payload = {
-        content: '🔔 **NEW ORDER ALERT!**',
-        embeds: [embed]
-      };
-
-      await fetch(DISCORD_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      console.log('✅ ORDER sent without image');
     }
 
-    return res.status(200).json({ success: true, message: 'Order sent' });
+    return res.status(200).json({ success: true, message: 'Order sent successfully' });
 
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('❌ Critical error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 }
