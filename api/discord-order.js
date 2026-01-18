@@ -26,10 +26,10 @@ export default async function handler(req, res) {
       `${item.quantity}x **${item.name}** - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`
     ).join('\n');
 
-    // Format WhatsApp link customer dengan chat otomatis
+    // Format WhatsApp link customer
     const customerWaLink = `https://wa.me/${customerData.phone}`;
 
-    // Base embed dengan link WhatsApp customer
+    // STEP 1: Kirim Embed (TANPA gambar dulu)
     const embed = {
       title: '🛒 PEMBELIAN BARU - WarpahExploits',
       color: 0x00ff88,
@@ -62,93 +62,92 @@ export default async function handler(req, res) {
       });
     }
 
-    // KIRIM EMBED DULU (tanpa gambar)
-    const initialPayload = {
+    const payload1 = {
       content: `🔔 **NEW ORDER ALERT!**\n💬 [Chat Customer di WhatsApp](${customerWaLink})`,
       embeds: [embed]
     };
 
-    const embedResponse = await fetch(DISCORD_WEBHOOK_URL, {
+    const response1 = await fetch(DISCORD_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(initialPayload)
+      body: JSON.stringify(payload1)
     });
 
-    if (!embedResponse.ok) {
-      const errorText = await embedResponse.text();
-      console.error('❌ Embed failed:', errorText);
-      throw new Error(`Embed failed: ${embedResponse.status}`);
+    if (!response1.ok) {
+      throw new Error(`Failed to send embed: ${response1.status}`);
     }
 
-    console.log('✅ Embed ORDER sent successfully');
+    console.log('✅ Embed sent');
 
-    // KIRIM GAMBAR TERPISAH (lebih reliable)
+    // STEP 2: Kirim Gambar (jika ada)
     if (proofImage) {
       try {
-        console.log('📸 Processing proof image...');
+        // Delay sedikit agar tidak rate limit
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Parse base64
-        let base64Data = proofImage;
-        if (base64Data.includes(',')) {
-          base64Data = base64Data.split(',')[1];
-        }
-
-        // Convert to buffer
-        const imageBuffer = Buffer.from(base64Data, 'base64');
-        console.log(`📦 Image size: ${imageBuffer.length} bytes (${(imageBuffer.length / 1024).toFixed(2)} KB)`);
-
-        if (imageBuffer.length === 0) {
-          throw new Error('Image buffer is empty');
-        }
-
-        // Gunakan fetch dengan FormData yang kompatibel
-        const FormData = require('form-data');
-        const form = new FormData();
+        const base64Match = proofImage.match(/^data:image\/[a-z]+;base64,(.+)$/);
+        const base64Data = base64Match ? base64Match[1] : proofImage;
         
-        form.append('content', '📸 **BUKTI TRANSFER:**');
-        form.append('file', imageBuffer, {
-          filename: `proof_${Date.now()}.jpg`,
-          contentType: 'image/jpeg',
-          knownLength: imageBuffer.length
-        });
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        console.log(`Image buffer: ${buffer.length} bytes`);
 
-        console.log('📤 Uploading image to Discord...');
+        if (buffer.length < 100) {
+          throw new Error('Buffer too small, invalid image');
+        }
 
-        const imageResponse = await fetch(DISCORD_WEBHOOK_URL, {
+        // Simple fetch dengan binary body
+        const boundary = '----WebKitFormBoundary' + Math.random().toString(36);
+        const formBody = 
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="content"\r\n\r\n` +
+          `📸 **BUKTI TRANSFER:**\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="file"; filename="proof.jpg"\r\n` +
+          `Content-Type: image/jpeg\r\n\r\n`;
+        
+        const formBodyEnd = `\r\n--${boundary}--`;
+        
+        const bodyBuffer = Buffer.concat([
+          Buffer.from(formBody, 'utf8'),
+          buffer,
+          Buffer.from(formBodyEnd, 'utf8')
+        ]);
+
+        const response2 = await fetch(DISCORD_WEBHOOK_URL, {
           method: 'POST',
-          body: form,
-          headers: form.getHeaders()
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${boundary}`
+          },
+          body: bodyBuffer
         });
 
-        const responseText = await imageResponse.text();
-        
-        if (!imageResponse.ok) {
-          console.error('❌ Image upload failed:', responseText);
-          throw new Error(`Image upload failed: ${imageResponse.status}`);
+        if (!response2.ok) {
+          const errorText = await response2.text();
+          throw new Error(`Image upload failed: ${response2.status} - ${errorText}`);
         }
 
-        console.log('✅ Image uploaded successfully!');
+        console.log('✅ Image sent');
 
-      } catch (imageError) {
-        console.error('❌ Error uploading image:', imageError.message);
+      } catch (err) {
+        console.error('Image error:', err.message);
         
-        // Send error notification
-        const errorPayload = {
-          content: `⚠️ **PERINGATAN:** Bukti transfer gagal diupload!\n🔴 Error: ${imageError.message}\n💬 Silakan minta customer kirim ulang via [WhatsApp](${customerWaLink})`
-        };
-
+        // Fallback notification
         await fetch(DISCORD_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(errorPayload)
+          body: JSON.stringify({
+            content: `⚠️ Bukti transfer gagal upload. Error: ${err.message}`
+          })
         });
       }
     }
 
-    return res.status(200).json({ success: true, message: 'Order sent successfully' });
+    return res.status(200).json({ success: true });
 
   } catch (error) {
-    console.error('❌ Critical error:', error);
+    console.error('Error:', error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
 }
