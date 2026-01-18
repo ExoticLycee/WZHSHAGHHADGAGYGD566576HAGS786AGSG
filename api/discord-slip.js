@@ -21,7 +21,10 @@ export default async function handler(req, res) {
 
     console.log('📤 Sending to SLIP webhook...');
 
-    // Base embed (TANPA nomor HP dan email - sesuai permintaan)
+    // Link WhatsApp Admin WarpahExploits
+    const adminWaLink = 'https://wa.me/6288223055352';
+
+    // Base embed dengan link WA admin untuk customer
     const embed = {
       title: '💳 TRANSAKSI SELESAI',
       description: '✅ Pembayaran telah dikonfirmasi',
@@ -36,6 +39,11 @@ export default async function handler(req, res) {
           name: '💰 Total',
           value: `Rp ${totalAmount.toLocaleString('id-ID')}`,
           inline: true
+        },
+        {
+          name: '📞 Butuh Bantuan?',
+          value: `[💬 Hubungi Admin WarpahExploits](${adminWaLink})`,
+          inline: false
         }
       ],
       timestamp: new Date().toISOString(),
@@ -112,9 +120,9 @@ export default async function handler(req, res) {
       } catch (imageError) {
         console.error('❌ Error uploading SLIP image:', imageError.message);
         
-        // Send error notification
+        // Send error notification dengan link admin
         const errorPayload = {
-          content: `⚠️ **PERINGATAN:** Bukti transfer SLIP gagal diupload!\n🔴 Error: ${imageError.message}`
+          content: `⚠️ **PERINGATAN:** Bukti transfer gagal diupload!\n🔴 Error: ${imageError.message}\n💬 [Hubungi Admin WarpahExploits](${adminWaLink})`
         };
 
         await fetch(DISCORD_WEBHOOK_SLIP, {
@@ -132,3 +140,40 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: error.message });
   }
 }
+```
+
+## Hasil yang Akan Muncul di Discord:
+
+### **Webhook ORDER (Data Lengkap untuk Admin):**
+```
+🔔 NEW ORDER ALERT!
+💬 Chat Customer di WhatsApp
+
+📋 PEMBELIAN BARU
+👤 Data Customer
+Nama: John Doe
+WhatsApp: 628123456789 📱 [clickable link]
+Email: john@example.com
+
+📦 Detail Pesanan: ...
+💰 Total: Rp 50.000
+
+---
+📸 BUKTI TRANSFER:
+[Gambar bukti transfer]
+```
+
+### **Webhook SLIP (Transfer Slip untuk Customer):**
+```
+✅ TRANSAKSI DONE
+
+💳 TRANSAKSI SELESAI
+✅ Pembayaran telah dikonfirmasi
+
+👤 Nama Customer: John Doe
+💰 Total: Rp 50.000
+📞 Butuh Bantuan?: 💬 Hubungi Admin WarpahExploits [clickable link ke wa.me/6288223055352]
+
+---
+📸 BUKTI TRANSFER:
+[Gambar bukti transfer]
