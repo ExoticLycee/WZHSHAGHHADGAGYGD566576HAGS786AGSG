@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
     console.log('Mengirim ke webhook SLIP...');
 
-    // Buat embed Discord - HANYA bukti transfer dan nickname
+    // Buat embed Discord - HANYA nama dan total
     const embed = {
       title: '💳 TRANSAKSI SELESAI',
       description: '✅ Pembayaran telah dikonfirmasi',
@@ -50,27 +50,7 @@ export default async function handler(req, res) {
       }
     };
 
-    const discordPayload = {
-      content: '✅ **TRANSAKSI DONE**',
-      embeds: [embed]
-    };
-
-    // Kirim embed dulu
-    const response = await fetch(DISCORD_WEBHOOK_SLIP, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(discordPayload)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Discord API Error (SLIP):', errorText);
-      throw new Error(`Discord webhook SLIP gagal: ${response.status}`);
-    }
-
-    console.log('✅ Berhasil kirim ke Discord SLIP');
-
-    // Kirim bukti transfer jika ada
+    // Jika ada bukti transfer, kirim dengan FormData (embed + file sekaligus)
     if (proofImage) {
       const base64Data = proofImage.split(',')[1];
       const buffer = Buffer.from(base64Data, 'base64');
@@ -78,17 +58,51 @@ export default async function handler(req, res) {
       const FormData = require('form-data');
       const form = new FormData();
       
-      form.append('content', '📸 **Bukti Transfer:**');
+      // Kirim embed + file dalam 1 request
+      const payload = {
+        content: '✅ **TRANSAKSI DONE**',
+        embeds: [embed]
+      };
+      
+      form.append('payload_json', JSON.stringify(payload));
       form.append('file', buffer, {
         filename: `slip_${Date.now()}.jpg`,
         contentType: 'image/jpeg'
       });
 
-      await fetch(DISCORD_WEBHOOK_SLIP, {
+      const response = await fetch(DISCORD_WEBHOOK_SLIP, {
         method: 'POST',
         body: form,
         headers: form.getHeaders()
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Discord API Error (SLIP):', errorText);
+        throw new Error(`Discord webhook SLIP gagal: ${response.status}`);
+      }
+
+      console.log('✅ Berhasil kirim ke Discord SLIP (dengan bukti transfer)');
+    } else {
+      // Jika tidak ada bukti, kirim embed saja
+      const discordPayload = {
+        content: '✅ **TRANSAKSI DONE**',
+        embeds: [embed]
+      };
+
+      const response = await fetch(DISCORD_WEBHOOK_SLIP, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(discordPayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Discord API Error (SLIP):', errorText);
+        throw new Error(`Discord webhook SLIP gagal: ${response.status}`);
+      }
+
+      console.log('✅ Berhasil kirim ke Discord SLIP (tanpa bukti transfer)');
     }
 
     return res.status(200).json({ 
