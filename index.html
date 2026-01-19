@@ -151,6 +151,12 @@
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
         }
         
+        .neon-btn-advanced:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
         .neon-btn-advanced span {
             position: relative;
             z-index: 1;
@@ -683,7 +689,7 @@
                         <textarea id="customerNote" rows="3" placeholder="Tambahkan catatan jika ada..." class="w-full px-4 py-3 rounded-xl glass-card border border-green-500/30 focus:border-green-500 focus:outline-none text-white"></textarea>
                     </div>
 
-                    <button type="submit" class="neon-btn-advanced w-full py-5 rounded-xl font-black text-lg text-black">
+                    <button type="submit" id="submitBtn" class="neon-btn-advanced w-full py-5 rounded-xl font-black text-lg text-black">
                         <span>💬 KIRIM KONFIRMASI</span>
                     </button>
                 </form>
@@ -713,10 +719,35 @@
 
     <script>
         // ========================================
-        // FUNGSI KIRIM KE DISCORD (UPDATE)
+        // ANTI-SPAM GLOBAL VARIABLES
+        // ========================================
+        let isSubmitting = false;
+        let hasSubmitted = false;
+        const submittedOrders = new Set();
+
+        // ========================================
+        // FUNGSI KIRIM KE DISCORD (WITH ANTI-SPAM)
         // ========================================
         async function sendToDiscord(customerData, cartData, totalAmount, proofFile) {
             try {
+                // CHECK DUPLICATE DULU
+                const checkDuplicate = await fetch('/api/check-duplicate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: customerData.phone,
+                        amount: totalAmount
+                    })
+                });
+
+                const dupCheck = await checkDuplicate.json();
+                
+                if (dupCheck.isDuplicate) {
+                    throw new Error(dupCheck.message);
+                }
+
                 // Convert file to base64
                 let proofImage = null;
                 if (proofFile) {
@@ -768,12 +799,12 @@
                 }
             } catch (error) {
                 console.error('Error sending to Discord:', error);
-                return false;
+                throw error;
             }
         }
 
         // ========================================
-        // SISANYA TETAP SAMA
+        // PARTICLE ANIMATION
         // ========================================
         function createParticles() {
             const container = document.getElementById('particles');
@@ -793,6 +824,9 @@
         }
         createParticles();
 
+        // ========================================
+        // MUSIC CONTROL
+        // ========================================
         let isPlaying = false;
         const bgMusic = document.getElementById('bgMusic');
         const musicIcon = document.getElementById('musicIcon');
@@ -818,6 +852,9 @@
             document.removeEventListener('click', autoPlay);
         }, { once: true });
 
+        // ========================================
+        // SHOPPING CART
+        // ========================================
         let cart = [];
         let uploadedFile = null;
         let countdownInterval = null;
@@ -1029,9 +1066,23 @@
             }, 3000);
         }
 
-        // Form Submit dengan Discord Webhook Integration
+        // ========================================
+        // FORM SUBMIT WITH ANTI-SPAM
+        // ========================================
         document.getElementById('paymentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // ANTI-SPAM CHECK #1: Cek apakah sedang proses submit
+            if (isSubmitting) {
+                showNotification('⏳ Mohon tunggu, sedang memproses...', 'error');
+                return;
+            }
+
+            // ANTI-SPAM CHECK #2: Cek apakah sudah pernah submit
+            if (hasSubmitted) {
+                showNotification('⚠️ Anda sudah mengirim konfirmasi! Mohon tunggu konfirmasi dari admin via WhatsApp.', 'error');
+                return;
+            }
             
             const customerName = document.getElementById('customerName').value.trim();
             const customerPhone = document.getElementById('customerPhone').value.trim();
@@ -1053,59 +1104,102 @@
                 return;
             }
             
+            // ANTI-SPAM CHECK #3: Generate order fingerprint
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const orderFingerprint = `${customerPhone}-${totalAmount}-${Date.now()}`;
+            
+            if (submittedOrders.has(orderFingerprint)) {
+                showNotification('⚠️ Order duplikat terdeteksi!', 'error');
+                return;
+            }
+            
+            // Set flags
+            isSubmitting = true;
+            submittedOrders.add(orderFingerprint);
+            
+            // Disable submit button
+            const submitBtn = document.getElementById('submitBtn');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>⏳ MENGIRIM...</span>';
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+            
             // Show loading
             showNotification('⏳ Mengirim data ke Discord...', 'success');
             
-            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            // Kirim ke Discord
-            const discordSent = await sendToDiscord(
-                {
-                    name: customerName,
-                    phone: customerPhone,
-                    email: customerEmail,
-                    note: customerNote
-                },
-                cart,
-                totalAmount,
-                uploadedFile
-            );
-            
-            if (discordSent) {
-                showNotification('✅ Bukti pembayaran berhasil dikirim ke Discord!', 'success');
-            } else {
-                showNotification('⚠️ Gagal kirim ke Discord, tapi akan tetap ke WhatsApp', 'error');
-            }
-            
-            // Buat pesan WhatsApp
-            const orderDetails = cart.map(item => 
-                `${item.quantity}x ${item.name} (Rp ${(item.price * item.quantity).toLocaleString('id-ID')})`
-            ).join('%0A');
-            
-            let message = `🛒 *KONFIRMASI PEMBAYARAN WARPAHEXPLOITS*%0A%0A`;
-            message += `👤 *Data Customer:*%0A`;
-            message += `Nama: ${customerName}%0A`;
-            message += `WA: ${customerPhone}%0A`;
-            if (customerEmail) message += `Email: ${customerEmail}%0A`;
-            message += `%0A📦 *Pesanan:*%0A${orderDetails}%0A`;
-            message += `%0A💰 *Total Pembayaran:* Rp ${totalAmount.toLocaleString('id-ID')}%0A`;
-            message += '%0A✅ Bukti sudah dikirim ke Discord!%0A';
-            if (customerNote) message += `%0A📝 *Catatan:* ${customerNote}%0A`;
-            message += '%0A_Mohon dicek dan konfirmasi ya kak! 🙏_';
-            
-            // Tunggu sebentar lalu buka WhatsApp
-            setTimeout(() => {
-                const waUrl = `https://wa.me/6288223055352?text=${message}`;
-                window.open(waUrl, '_blank');
-                showNotification('✅ Mengarahkan ke WhatsApp...', 'success');
+            try {
+                // Kirim ke Discord
+                const discordSent = await sendToDiscord(
+                    {
+                        name: customerName,
+                        phone: customerPhone,
+                        email: customerEmail,
+                        note: customerNote
+                    },
+                    cart,
+                    totalAmount,
+                    uploadedFile
+                );
                 
-                // Reset form setelah redirect
+                if (discordSent) {
+                    showNotification('✅ Bukti pembayaran berhasil dikirim ke Discord!', 'success');
+                    hasSubmitted = true; // Mark as submitted
+                } else {
+                    showNotification('⚠️ Gagal kirim ke Discord, tapi akan tetap ke WhatsApp', 'error');
+                }
+                
+                // Buat pesan WhatsApp
+                const orderDetails = cart.map(item => 
+                    `${item.quantity}x ${item.name} (Rp ${(item.price * item.quantity).toLocaleString('id-ID')})`
+                ).join('%0A');
+                
+                let message = `🛒 *KONFIRMASI PEMBAYARAN WARPAHEXPLOITS*%0A%0A`;
+                message += `👤 *Data Customer:*%0A`;
+                message += `Nama: ${customerName}%0A`;
+                message += `WA: ${customerPhone}%0A`;
+                if (customerEmail) message += `Email: ${customerEmail}%0A`;
+                message += `%0A📦 *Pesanan:*%0A${orderDetails}%0A`;
+                message += `%0A💰 *Total Pembayaran:* Rp ${totalAmount.toLocaleString('id-ID')}%0A`;
+                message += '%0A✅ Bukti sudah dikirim ke Discord!%0A';
+                if (customerNote) message += `%0A📝 *Catatan:* ${customerNote}%0A`;
+                message += '%0A_Mohon dicek dan konfirmasi ya kak! 🙏_';
+                
+                // Tunggu sebentar lalu buka WhatsApp
                 setTimeout(() => {
-                    closeCart();
-                    cart = [];
-                    updateCartUI();
+                    const waUrl = `https://wa.me/6288223055352?text=${message}`;
+                    window.open(waUrl, '_blank');
+                    showNotification('✅ Mengarahkan ke WhatsApp...', 'success');
+                    
+                    // Show success message dengan timer
+                    setTimeout(() => {
+                        showNotification('✅ Konfirmasi terkirim! Tim kami akan segera memproses pesanan Anda.', 'success');
+                        
+                        // Reset form setelah redirect (tapi jangan reset hasSubmitted)
+                        setTimeout(() => {
+                            closeCart();
+                            cart = [];
+                            updateCartUI();
+                            
+                            // Show final message
+                            setTimeout(() => {
+                                alert('✅ Terima kasih! Pesanan Anda sedang diproses.\n\n📱 Kami akan menghubungi Anda via WhatsApp segera.\n\n⚠️ Jangan submit ulang untuk menghindari duplikasi order!');
+                            }, 500);
+                        }, 1500);
+                    }, 1000);
                 }, 1500);
-            }, 1500);
+                
+            } catch (error) {
+                console.error('Submit error:', error);
+                showNotification('❌ ' + error.message, 'error');
+                
+                // Reset pada error
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            }
         });
 
         document.getElementById('cartBtn').addEventListener('click', openCart);
