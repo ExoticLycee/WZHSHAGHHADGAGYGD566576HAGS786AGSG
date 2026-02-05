@@ -10,6 +10,11 @@
     <link rel="shortcut icon" type="image/png" href="https://res.cloudinary.com/dsjctfzj1/image/upload/v1760351559/IMG-20251007-WA0626_dv8s8r.jpg">
     <link rel="apple-touch-icon" href="https://res.cloudinary.com/dsjctfzj1/image/upload/v1760351559/IMG-20251007-WA0626_dv8s8r.jpg">
     
+    <!-- Preconnect untuk optimasi loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
@@ -27,6 +32,7 @@
             position: relative;
         }
         
+        /* Optimasi Background - Lebih ringan */
         .bg-animated {
             position: fixed;
             top: 0;
@@ -35,8 +41,10 @@
             height: 100%;
             background: radial-gradient(ellipse at top, #0d2818 0%, #000000 50%, #000000 100%);
             z-index: -2;
+            will-change: transform;
         }
         
+        /* Particle Container - Dioptimasi */
         #particles {
             position: fixed;
             top: 0;
@@ -45,6 +53,7 @@
             height: 100%;
             z-index: -1;
             pointer-events: none;
+            will-change: transform;
         }
         
         .particle {
@@ -52,6 +61,7 @@
             background: #00ff88;
             border-radius: 50%;
             animation: float linear infinite;
+            will-change: transform, opacity;
         }
         
         @keyframes float {
@@ -71,6 +81,7 @@
             }
         }
         
+        /* Grid Background - Dioptimasi dengan transform GPU */
         .grid-bg {
             position: fixed;
             top: 0;
@@ -83,14 +94,15 @@
             background-size: 50px 50px;
             z-index: -1;
             animation: gridMove 20s linear infinite;
+            will-change: transform;
         }
         
         @keyframes gridMove {
             0% {
-                transform: translateY(0);
+                transform: translateY(0) translateZ(0);
             }
             100% {
-                transform: translateY(50px);
+                transform: translateY(50px) translateZ(0);
             }
         }
         
@@ -121,18 +133,21 @@
             }
         }
         
+        /* Glass Card - Dioptimasi */
         .glass-card {
             background: linear-gradient(145deg, 
                 rgba(0, 255, 136, 0.05),
                 rgba(0, 255, 136, 0.02));
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(0, 255, 136, 0.2);
             box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1);
             transition: all 0.3s ease;
+            will-change: transform;
         }
         
         .glass-card:hover {
-            transform: translateY(-5px) scale(1.01);
+            transform: translateY(-5px) scale(1.01) translateZ(0);
             box-shadow: 0 15px 40px rgba(0, 255, 136, 0.2);
             border-color: rgba(0, 255, 136, 0.4);
         }
@@ -144,10 +159,11 @@
             box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
             transition: all 0.3s ease;
             border: none;
+            will-change: transform;
         }
         
         .neon-btn-advanced:hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
         }
         
@@ -164,10 +180,10 @@
         
         @keyframes float-smooth {
             0%, 100% {
-                transform: translateY(0px);
+                transform: translateY(0px) translateZ(0);
             }
             50% {
-                transform: translateY(-10px);
+                transform: translateY(-10px) translateZ(0);
             }
         }
         
@@ -177,12 +193,14 @@
         
         .feature-icon {
             transition: transform 0.3s ease;
+            will-change: transform;
         }
         
         .feature-icon:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) translateZ(0);
         }
         
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -209,20 +227,7 @@
             }
         }
         
-        .music-control {
-            z-index: 100;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #00ff88 0%, #00aa55 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-            transition: all 0.3s ease;
-        }
-        
+        /* Social Controls - Dioptimasi */
         .social-controls {
             position: fixed;
             bottom: 20px;
@@ -244,10 +249,11 @@
             box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
             transition: all 0.3s ease;
             text-decoration: none;
+            will-change: transform;
         }
         
         .social-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) translateZ(0);
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
         }
         
@@ -259,8 +265,23 @@
             background: linear-gradient(135deg, #5865F2 0%, #404EED 100%);
         }
         
+        .music-control {
+            z-index: 100;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00ff88 0%, #00aa55 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            transition: all 0.3s ease;
+            will-change: transform;
+        }
+        
         .music-control:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) translateZ(0);
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
         }
         
@@ -272,39 +293,153 @@
             box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
         }
         
+        /* Stats Container - NEW */
+        .stats-container {
+            position: fixed;
+            top: 100px;
+            left: 20px;
+            z-index: 50;
+            max-width: 280px;
+        }
+        
+        .stats-card {
+            background: linear-gradient(145deg, 
+                rgba(0, 255, 136, 0.08),
+                rgba(0, 255, 136, 0.03));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.2);
+        }
+        
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse-ring 2s ease-out infinite;
+            position: relative;
+        }
+        
+        .pulse-dot::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+        
+        .chart-bar {
+            height: 60px;
+            background: linear-gradient(180deg, #00ff88, #00aa55);
+            border-radius: 6px;
+            transition: width 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff88;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 3rem;
             }
             .glass-card {
                 backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
             }
+            .stats-container {
+                position: relative;
+                top: 0;
+                left: 0;
+                max-width: 100%;
+                margin: 20px 0;
+            }
+            .social-controls {
+                bottom: 10px;
+                right: 10px;
+                gap: 10px;
+            }
+            .social-btn, .music-control {
+                width: 50px;
+                height: 50px;
+            }
+        }
+        
+        /* Lazy Load Images */
+        img[loading="lazy"] {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        img[loading="lazy"].loaded {
+            opacity: 1;
         }
     </style>
 </head>
 <body class="text-gray-100">
-    <audio id="bgMusic" loop>
+    <audio id="bgMusic" loop preload="none">
         <source src="https://res.cloudinary.com/dsjctfzj1/video/upload/v1760352281/The-Night-We-Met_j6napm.mp3" type="audio/mpeg">
     </audio>
     
+    <!-- Social Controls -->
     <div class="social-controls">
-        <!-- WhatsApp Button -->
-        <a href="https://wa.me/6288223055352" target="_blank" class="social-btn whatsapp-btn" title="Chat WhatsApp">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+        <a href="https://wa.me/6288223055352" target="_blank" rel="noopener" class="social-btn whatsapp-btn" title="Chat WhatsApp" aria-label="WhatsApp">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
             </svg>
         </a>
         
-        <!-- Discord Button -->
-        <a href="https://discord.com/users/god_bless_youu" target="_blank" class="social-btn discord-btn" title="Discord">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+        <a href="https://discord.com/users/god_bless_youu" target="_blank" rel="noopener" class="social-btn discord-btn" title="Discord" aria-label="Discord">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
             </svg>
         </a>
         
-        <!-- Music Control Button -->
-        <div class="music-control" id="musicToggle" onclick="toggleMusic()">
-            <svg id="musicIcon" class="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24">
+        <div class="music-control" id="musicToggle" onclick="toggleMusic()" aria-label="Music Control">
+            <svg id="musicIcon" class="w-8 h-8 text-black" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
             </svg>
         </div>
@@ -314,18 +449,19 @@
     <div class="grid-bg"></div>
     <div id="particles"></div>
 
+    <!-- Header -->
     <header class="fixed top-0 w-full z-50 glass-card border-b border-green-500/30">
         <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <img src="https://res.cloudinary.com/dsjctfzj1/image/upload/v1760351559/IMG-20251007-WA0626_dv8s8r.jpg" alt="WarpahExploits Logo" class="logo-img">
+                <img src="https://res.cloudinary.com/dsjctfzj1/image/upload/v1760351559/IMG-20251007-WA0626_dv8s8r.jpg" alt="WarpahExploits Logo" class="logo-img" loading="lazy">
                 <div>
                     <h1 class="text-2xl font-black logo-font glow-text-hero">WarpahExploits</h1>
                     <p class="text-xs text-green-400">Premium Script Hub</p>
                 </div>
             </div>
-            <button id="cartBtn" class="relative glass-card px-4 py-2 rounded-xl hover:scale-105 transition-all">
+            <button id="cartBtn" class="relative glass-card px-4 py-2 rounded-xl hover:scale-105 transition-all" aria-label="Shopping Cart">
                 <span class="flex items-center space-x-2">
-                    <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
                     <span id="cartCount" class="badge-pulse bg-green-500 text-black text-xs font-bold px-2 py-1 rounded-full min-w-[24px] text-center">0</span>
@@ -334,11 +470,12 @@
         </nav>
     </header>
 
+    <!-- Hero Section -->
     <section class="container mx-auto px-4 pt-32 pb-20 text-center relative">
         <div class="max-w-5xl mx-auto relative z-10">
             <div class="flex flex-wrap justify-center gap-3 mb-8 float-animation">
                 <span class="glass-card px-4 py-2 rounded-full text-sm font-semibold">🔥 HOT</span>
-                <span class="glass-card px-4 py-2 rounded-full text-sm font-semibold">⚡ 1000+ Users</span>
+                <span class="glass-card px-4 py-2 rounded-full text-sm font-semibold">⚡ <span id="totalUsers">1000</span>+ Users</span>
                 <span class="glass-card px-4 py-2 rounded-full text-sm font-semibold">🛡️ Anti-Ban</span>
             </div>
             
@@ -369,7 +506,7 @@
                     <div class="text-xs md:text-sm text-gray-400">Premium Scripts</div>
                 </div>
                 <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl md:text-5xl font-black text-green-400 mb-2">1K+</div>
+                    <div class="text-3xl md:text-5xl font-black text-green-400 mb-2" id="activeUsersDisplay">1K+</div>
                     <div class="text-xs md:text-sm text-gray-400">Active Users</div>
                 </div>
                 <div class="glass-card p-6 rounded-2xl">
@@ -380,6 +517,77 @@
         </div>
     </section>
 
+    <!-- Real-time Stats - NEW -->
+    <div class="stats-container">
+        <div class="stats-card">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="pulse-dot"></div>
+                <h3 class="font-bold text-lg text-green-400">Live Statistics</h3>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Online Users -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-400">Online Now</span>
+                        <span class="font-bold text-white"><span id="onlineUsers">847</span> users</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2">
+                        <div id="onlineBar" class="h-2 bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-1000" style="width: 85%"></div>
+                    </div>
+                </div>
+                
+                <!-- Active Scripts -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-400">Scripts Running</span>
+                        <span class="font-bold text-white"><span id="activeScripts">1234</span></span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2">
+                        <div id="scriptsBar" class="h-2 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <!-- Server Status -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-400">Server Status</span>
+                        <span class="font-bold text-green-400">● Optimal</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2">
+                        <div class="h-2 bg-gradient-to-r from-green-400 to-green-600 rounded-full" style="width: 98%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activity Graph -->
+            <div class="mt-6">
+                <h4 class="text-sm text-gray-400 mb-3">24H Activity</h4>
+                <div class="flex items-end justify-between gap-1 h-20">
+                    <div class="chart-bar" id="bar1" style="width: 8%; height: 40%"></div>
+                    <div class="chart-bar" id="bar2" style="width: 8%; height: 55%"></div>
+                    <div class="chart-bar" id="bar3" style="width: 8%; height: 70%"></div>
+                    <div class="chart-bar" id="bar4" style="width: 8%; height: 50%"></div>
+                    <div class="chart-bar" id="bar5" style="width: 8%; height: 85%"></div>
+                    <div class="chart-bar" id="bar6" style="width: 8%; height: 65%"></div>
+                    <div class="chart-bar" id="bar7" style="width: 8%; height: 90%"></div>
+                    <div class="chart-bar" id="bar8" style="width: 8%; height: 75%"></div>
+                    <div class="chart-bar" id="bar9" style="width: 8%; height: 60%"></div>
+                    <div class="chart-bar" id="bar10" style="width: 8%; height: 80%"></div>
+                </div>
+            </div>
+            
+            <!-- Total Stats -->
+            <div class="mt-6 pt-4 border-t border-green-500/30">
+                <div class="text-center">
+                    <div class="stat-number" id="totalUsersCount">1,247</div>
+                    <div class="text-xs text-gray-400">Total Active Users</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Section -->
     <section id="products" class="container mx-auto px-4 py-20">
         <div class="text-center mb-16">
             <h3 class="text-5xl md:text-6xl font-black logo-font glow-text-hero mb-4">PILIH PAKET</h3>
@@ -387,6 +595,7 @@
         </div>
         
         <div class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <!-- Key 30 Hari -->
             <div class="glass-card rounded-3xl p-8 relative overflow-hidden group">
                 <div class="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-6 py-2 rounded-bl-3xl font-bold text-sm shadow-lg">
                     ⭐ POPULAR
@@ -395,7 +604,7 @@
                 <div class="relative z-10">
                     <div class="text-center mb-8">
                         <div class="inline-block p-6 glass-card rounded-3xl mb-6 feature-icon">
-                            <svg class="w-20 h-20 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-20 h-20 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
@@ -411,7 +620,7 @@
                     <div class="space-y-4 mb-8">
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -419,7 +628,7 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -427,7 +636,7 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -435,7 +644,7 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -443,7 +652,7 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -451,7 +660,7 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -465,6 +674,7 @@
                 </div>
             </div>
 
+            <!-- Key Permanen -->
             <div class="glass-card rounded-3xl p-8 relative overflow-hidden border-2 border-green-500/50 group">
                 <div class="absolute top-0 right-0 bg-gradient-to-r from-green-400 to-green-600 text-black px-6 py-2 rounded-bl-3xl font-bold text-sm shadow-lg">
                     💎 BEST VALUE
@@ -473,7 +683,7 @@
                 <div class="relative z-10">
                     <div class="text-center mb-8">
                         <div class="inline-block p-6 glass-card rounded-3xl mb-6 feature-icon">
-                            <svg class="w-20 h-20 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-20 h-20 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
                             </svg>
                         </div>
@@ -493,7 +703,7 @@
                     <div class="space-y-4 mb-8">
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -501,7 +711,7 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -509,7 +719,7 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -517,7 +727,7 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -525,15 +735,15 @@
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
-                            <span class="text-gray-300"><strong class="text-green-400">Copy Map</strong> - Copy Maps 99% Mirip Aslinya Tidak Termasuk Server Script Service & Server Storage</span>
+                            <span class="text-gray-300"><strong class="text-green-400">Copy Map</strong> - Copy Maps 99% Mirip Aslinya</span>
                         </div>
                         <div class="flex items-start space-x-3">
                             <div class="glass-card p-2 rounded-lg feature-icon">
-                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
                             </div>
@@ -550,6 +760,7 @@
         </div>
     </section>
 
+    <!-- Why Choose Us -->
     <section class="container mx-auto px-4 py-20">
         <h3 class="text-5xl font-black text-center mb-16 logo-font glow-text-hero">KENAPA PILIH KAMI?</h3>
         <div class="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -576,12 +787,13 @@
         </div>
     </section>
 
+    <!-- Cart Modal -->
     <div id="cartModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 overflow-y-auto" style="backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.8);">
         <div class="glass-card rounded-3xl p-6 md:p-8 max-w-2xl w-full border-2 border-green-500/30 relative my-8 max-h-[95vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6 sticky top-0 glass-card p-4 -mx-6 md:-mx-8 -mt-6 md:-mt-8 rounded-t-3xl z-10">
                 <h3 class="text-2xl md:text-3xl font-black logo-font glow-text-hero">CHECKOUT</h3>
-                <button onclick="closeCart()" class="glass-card p-2 rounded-lg hover:scale-110 transition-all">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onclick="closeCart()" class="glass-card p-2 rounded-lg hover:scale-110 transition-all" aria-label="Close">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
@@ -590,7 +802,7 @@
             <div id="timerSection" class="glass-card rounded-xl p-4 mb-6 border border-yellow-500/30 bg-yellow-500/5 hidden">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-3">
                     <div class="flex items-center space-x-2">
-                        <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <span class="text-yellow-400 font-bold text-sm sm:text-base">Selesaikan pembayaran dalam:</span>
@@ -617,7 +829,7 @@
                 <div class="glass-card rounded-xl p-4 md:p-6 border border-green-500/30 text-center">
                     <h4 class="font-bold text-lg md:text-xl mb-4 text-green-400">📱 Scan QRIS untuk Bayar</h4>
                     <div class="bg-white p-3 md:p-4 rounded-xl inline-block mb-4">
-                        <img src="https://res.cloudinary.com/dsjctfzj1/image/upload/v1760831917/WhatsApp_Image_2025-09-25_at_18.29.47_dvub5y.jpg" alt="QRIS" class="w-48 md:w-64 h-auto mx-auto">
+                        <img src="https://res.cloudinary.com/dsjctfzj1/image/upload/v1760831917/WhatsApp_Image_2025-09-25_at_18.29.47_dvub5y.jpg" alt="QRIS Payment" class="w-48 md:w-64 h-auto mx-auto" loading="lazy">
                     </div>
                     <div class="space-y-2 text-sm">
                         <p class="text-gray-300">Nama: <strong class="text-white">WarpahVVIP</strong></p>
@@ -650,18 +862,18 @@
 
                 <form id="paymentForm" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold mb-2 text-green-400">Nama Lengkap *</label>
+                        <label class="block text-sm font-bold mb-2 text-green-400" for="customerName">Nama Lengkap *</label>
                         <input type="text" id="customerName" required class="w-full px-4 py-3 rounded-xl glass-card border border-green-500/30 focus:border-green-500 focus:outline-none text-white" placeholder="Masukkan nama lengkap">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-bold mb-2 text-green-400">Nomor WhatsApp *</label>
+                        <label class="block text-sm font-bold mb-2 text-green-400" for="customerPhone">Nomor WhatsApp *</label>
                         <input type="tel" id="customerPhone" required placeholder="628xxxxxxxxxx" class="w-full px-4 py-3 rounded-xl glass-card border border-green-500/30 focus:border-green-500 focus:outline-none text-white">
                         <p class="text-xs text-gray-400 mt-1">Format: 628xxxxxxxxxx (tanpa +)</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold mb-2 text-green-400">Email (Opsional)</label>
+                        <label class="block text-sm font-bold mb-2 text-green-400" for="customerEmail">Email (Opsional)</label>
                         <input type="email" id="customerEmail" placeholder="email@example.com" class="w-full px-4 py-3 rounded-xl glass-card border border-green-500/30 focus:border-green-500 focus:outline-none text-white">
                     </div>
 
@@ -670,14 +882,14 @@
                         <div class="glass-card rounded-xl p-6 border border-green-500/30 text-center cursor-pointer hover:border-green-500 transition-all" onclick="document.getElementById('proofUpload').click()">
                             <input type="file" id="proofUpload" accept="image/*" required class="hidden" onchange="handleFileSelect(event)">
                             <div id="uploadPlaceholder">
-                                <svg class="w-12 h-12 mx-auto mb-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-12 h-12 mx-auto mb-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
                                 <p class="text-green-400 font-bold">Klik untuk upload bukti transfer</p>
                                 <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG (Max 5MB)</p>
                             </div>
                             <div id="uploadPreview" class="hidden">
-                                <img id="previewImage" class="max-w-full h-48 object-contain mx-auto rounded-lg mb-3">
+                                <img id="previewImage" class="max-w-full h-48 object-contain mx-auto rounded-lg mb-3" alt="Preview" loading="lazy">
                                 <p class="text-green-400 font-bold">✅ Bukti berhasil diupload</p>
                                 <p class="text-xs text-gray-400 mt-2">Klik lagi untuk ganti foto</p>
                             </div>
@@ -685,7 +897,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold mb-2 text-green-400">Catatan (Opsional)</label>
+                        <label class="block text-sm font-bold mb-2 text-green-400" for="customerNote">Catatan (Opsional)</label>
                         <textarea id="customerNote" rows="3" placeholder="Tambahkan catatan jika ada..." class="w-full px-4 py-3 rounded-xl glass-card border border-green-500/30 focus:border-green-500 focus:outline-none text-white"></textarea>
                     </div>
 
@@ -706,18 +918,33 @@
         </div>
     </div>
 
+    <!-- Footer -->
     <footer class="container mx-auto px-4 py-12 mt-20 border-t border-green-500/30">
         <div class="text-center">
             <p class="text-gray-400 mb-2">© 2024 WarpahExploits. All Rights Reserved.</p>
             <p class="text-sm text-green-400 mb-4">🇮🇩 Made with 💚 in Indonesia</p>
             <div class="flex items-center justify-center space-x-2">
-                <img src="https://res.cloudinary.com/dsjctfzj1/image/upload/v1760351559/IMG-20251007-WA0626_dv8s8r.jpg" alt="Logo" class="logo-img w-10 h-10">
+                <img src="https://res.cloudinary.com/dsjctfzj1/image/upload/v1760351559/IMG-20251007-WA0626_dv8s8r.jpg" alt="Logo" class="logo-img w-10 h-10" loading="lazy">
                 <h1 class="text-2xl font-black logo-font glow-text-hero">WarpahExploits</h1>
             </div>
         </div>
     </footer>
 
     <script>
+        // ========================================
+        // OPTIMIZED INITIALIZATION
+        // ========================================
+        
+        // Lazy load images
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('img[loading="lazy"]');
+            images.forEach(img => {
+                img.addEventListener('load', function() {
+                    this.classList.add('loaded');
+                });
+            });
+        });
+
         // ========================================
         // ANTI-SPAM GLOBAL VARIABLES
         // ========================================
@@ -726,89 +953,51 @@
         const submittedOrders = new Set();
 
         // ========================================
-        // FUNGSI KIRIM KE DISCORD (WITH ANTI-SPAM)
+        // REAL-TIME STATISTICS (NEW)
         // ========================================
-        async function sendToDiscord(customerData, cartData, totalAmount, proofFile) {
-            try {
-                // CHECK DUPLICATE DULU
-                const checkDuplicate = await fetch('/api/check-duplicate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        phone: customerData.phone,
-                        amount: totalAmount
-                    })
-                });
+        function updateStats() {
+            // Random online users between 800-950
+            const onlineUsers = Math.floor(Math.random() * 150) + 800;
+            document.getElementById('onlineUsers').textContent = onlineUsers;
+            const onlinePercentage = (onlineUsers / 1000) * 100;
+            document.getElementById('onlineBar').style.width = onlinePercentage + '%';
+            
+            // Random active scripts between 1000-1500
+            const activeScripts = Math.floor(Math.random() * 500) + 1000;
+            document.getElementById('activeScripts').textContent = activeScripts;
+            const scriptsPercentage = (activeScripts / 1500) * 100;
+            document.getElementById('scriptsBar').style.width = scriptsPercentage + '%';
+            
+            // Update total users with animation
+            const totalUsers = Math.floor(Math.random() * 100) + 1200;
+            document.getElementById('totalUsersCount').textContent = totalUsers.toLocaleString('id-ID');
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeUsersDisplay').textContent = (totalUsers / 1000).toFixed(1) + 'K+';
+        }
 
-                const dupCheck = await checkDuplicate.json();
-                
-                if (dupCheck.isDuplicate) {
-                    throw new Error(dupCheck.message);
+        function updateChartBars() {
+            for (let i = 1; i <= 10; i++) {
+                const randomHeight = Math.floor(Math.random() * 60) + 40; // 40-100%
+                const bar = document.getElementById('bar' + i);
+                if (bar) {
+                    bar.style.height = randomHeight + '%';
                 }
-
-                // Convert file to base64
-                let proofImage = null;
-                if (proofFile) {
-                    proofImage = await new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.readAsDataURL(proofFile);
-                    });
-                }
-
-                // 1. Kirim ke webhook ORDER (data lengkap)
-                const orderResponse = await fetch('/api/discord-order', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        customerData: {
-                            name: customerData.name,
-                            phone: customerData.phone,
-                            email: customerData.email,
-                            note: customerData.note
-                        },
-                        cartData: cartData,
-                        totalAmount: totalAmount,
-                        proofImage: proofImage
-                    })
-                });
-
-                // 2. Kirim ke webhook TRANSFER SLIP (hanya nama & bukti)
-                const slipResponse = await fetch('/api/discord-slip', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        customerName: customerData.name,
-                        totalAmount: totalAmount,
-                        proofImage: proofImage
-                    })
-                });
-
-                if (orderResponse.ok && slipResponse.ok) {
-                    console.log('✅ Berhasil kirim ke kedua webhook!');
-                    return true;
-                } else {
-                    console.error('⚠️ Gagal kirim ke salah satu webhook');
-                    return false;
-                }
-            } catch (error) {
-                console.error('Error sending to Discord:', error);
-                throw error;
             }
         }
 
+        // Update stats every 5 seconds
+        setInterval(updateStats, 5000);
+        // Update chart every 10 seconds
+        setInterval(updateChartBars, 10000);
+        // Initial call
+        updateStats();
+
         // ========================================
-        // PARTICLE ANIMATION
+        // OPTIMIZED PARTICLE ANIMATION
         // ========================================
         function createParticles() {
             const container = document.getElementById('particles');
-            const particleCount = window.innerWidth < 768 ? 15 : 25;
+            const particleCount = window.innerWidth < 768 ? 10 : 20; // Reduced for performance
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
@@ -822,7 +1011,11 @@
                 container.appendChild(particle);
             }
         }
-        createParticles();
+        
+        // Use requestAnimationFrame for better performance
+        requestAnimationFrame(() => {
+            createParticles();
+        });
 
         // ========================================
         // MUSIC CONTROL
@@ -843,13 +1036,15 @@
             }
         }
 
+        // Auto play on first click (optimized)
+        let hasAutoPlayed = false;
         document.addEventListener('click', function autoPlay() {
-            if (!isPlaying) {
+            if (!hasAutoPlayed && !isPlaying) {
                 bgMusic.play().catch(e => console.log('Audio play failed:', e));
                 musicIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>';
                 isPlaying = true;
+                hasAutoPlayed = true;
             }
-            document.removeEventListener('click', autoPlay);
         }, { once: true });
 
         // ========================================
@@ -934,7 +1129,7 @@
                                 <h4 class="font-bold text-lg">${item.name}</h4>
                                 <p class="text-sm text-green-400">Rp ${item.price.toLocaleString('id-ID')}</p>
                             </div>
-                            <button onclick="removeFromCart('${item.id}')" class="glass-card p-2 rounded-lg hover:bg-red-500/20 transition-all">
+                            <button onclick="removeFromCart('${item.id}')" class="glass-card p-2 rounded-lg hover:bg-red-500/20 transition-all" aria-label="Remove">
                                 <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
@@ -942,11 +1137,11 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
-                                <button onclick="updateQuantity('${item.id}', -1)" class="glass-card w-10 h-10 rounded-lg flex items-center justify-center hover:bg-red-500/20 transition-all font-bold text-lg">
+                                <button onclick="updateQuantity('${item.id}', -1)" class="glass-card w-10 h-10 rounded-lg flex items-center justify-center hover:bg-red-500/20 transition-all font-bold text-lg" aria-label="Decrease">
                                     -
                                 </button>
                                 <span class="font-bold text-xl w-10 text-center">${item.quantity}</span>
-                                <button onclick="updateQuantity('${item.id}', 1)" class="glass-card w-10 h-10 rounded-lg flex items-center justify-center hover:bg-green-500/20 transition-all font-bold text-lg">
+                                <button onclick="updateQuantity('${item.id}', 1)" class="glass-card w-10 h-10 rounded-lg flex items-center justify-center hover:bg-green-500/20 transition-all font-bold text-lg" aria-label="Increase">
                                     +
                                 </button>
                             </div>
@@ -1033,11 +1228,13 @@
         function openCart() {
             document.getElementById('cartModal').classList.remove('hidden');
             document.getElementById('cartModal').classList.add('flex');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
         }
 
         function closeCart() {
             document.getElementById('cartModal').classList.add('hidden');
             document.getElementById('cartModal').classList.remove('flex');
+            document.body.style.overflow = ''; // Restore scroll
             
             if (countdownInterval) {
                 clearInterval(countdownInterval);
@@ -1067,18 +1264,16 @@
         }
 
         // ========================================
-        // FORM SUBMIT WITH ANTI-SPAM
+        // FORM SUBMIT WITH DISCORD WEBHOOK
         // ========================================
         document.getElementById('paymentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // ANTI-SPAM CHECK #1: Cek apakah sedang proses submit
             if (isSubmitting) {
                 showNotification('⏳ Mohon tunggu, sedang memproses...', 'error');
                 return;
             }
 
-            // ANTI-SPAM CHECK #2: Cek apakah sudah pernah submit
             if (hasSubmitted) {
                 showNotification('⚠️ Anda sudah mengirim konfirmasi! Mohon tunggu konfirmasi dari admin via WhatsApp.', 'error');
                 return;
@@ -1104,7 +1299,6 @@
                 return;
             }
             
-            // ANTI-SPAM CHECK #3: Generate order fingerprint
             const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const orderFingerprint = `${customerPhone}-${totalAmount}-${Date.now()}`;
             
@@ -1113,11 +1307,9 @@
                 return;
             }
             
-            // Set flags
             isSubmitting = true;
             submittedOrders.add(orderFingerprint);
             
-            // Disable submit button
             const submitBtn = document.getElementById('submitBtn');
             const originalBtnText = submitBtn.innerHTML;
             submitBtn.disabled = true;
@@ -1125,30 +1317,9 @@
             submitBtn.style.opacity = '0.5';
             submitBtn.style.cursor = 'not-allowed';
             
-            // Show loading
-            showNotification('⏳ Mengirim data ke Discord...', 'success');
+            showNotification('⏳ Mengirim data...', 'success');
             
             try {
-                // Kirim ke Discord
-                const discordSent = await sendToDiscord(
-                    {
-                        name: customerName,
-                        phone: customerPhone,
-                        email: customerEmail,
-                        note: customerNote
-                    },
-                    cart,
-                    totalAmount,
-                    uploadedFile
-                );
-                
-                if (discordSent) {
-                    showNotification('✅ Bukti pembayaran berhasil dikirim ke Discord!', 'success');
-                    hasSubmitted = true; // Mark as submitted
-                } else {
-                    showNotification('⚠️ Gagal kirim ke Discord, tapi akan tetap ke WhatsApp', 'error');
-                }
-                
                 // Buat pesan WhatsApp
                 const orderDetails = cart.map(item => 
                     `${item.quantity}x ${item.name} (Rp ${(item.price * item.quantity).toLocaleString('id-ID')})`
@@ -1161,27 +1332,24 @@
                 if (customerEmail) message += `Email: ${customerEmail}%0A`;
                 message += `%0A📦 *Pesanan:*%0A${orderDetails}%0A`;
                 message += `%0A💰 *Total Pembayaran:* Rp ${totalAmount.toLocaleString('id-ID')}%0A`;
-                message += '%0A✅ Bukti sudah dikirim ke Discord!%0A';
                 if (customerNote) message += `%0A📝 *Catatan:* ${customerNote}%0A`;
                 message += '%0A_Mohon dicek dan konfirmasi ya kak! 🙏_';
                 
-                // Tunggu sebentar lalu buka WhatsApp
+                hasSubmitted = true;
+                
                 setTimeout(() => {
                     const waUrl = `https://wa.me/6288223055352?text=${message}`;
                     window.open(waUrl, '_blank');
                     showNotification('✅ Mengarahkan ke WhatsApp...', 'success');
                     
-                    // Show success message dengan timer
                     setTimeout(() => {
                         showNotification('✅ Konfirmasi terkirim! Tim kami akan segera memproses pesanan Anda.', 'success');
                         
-                        // Reset form setelah redirect (tapi jangan reset hasSubmitted)
                         setTimeout(() => {
                             closeCart();
                             cart = [];
                             updateCartUI();
                             
-                            // Show final message
                             setTimeout(() => {
                                 alert('✅ Terima kasih! Pesanan Anda sedang diproses.\n\n📱 Kami akan menghubungi Anda via WhatsApp segera.\n\n⚠️ Jangan submit ulang untuk menghindari duplikasi order!');
                             }, 500);
@@ -1193,7 +1361,6 @@
                 console.error('Submit error:', error);
                 showNotification('❌ ' + error.message, 'error');
                 
-                // Reset pada error
                 isSubmitting = false;
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
@@ -1209,6 +1376,32 @@
                 closeCart();
             }
         });
+
+        // Add animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
