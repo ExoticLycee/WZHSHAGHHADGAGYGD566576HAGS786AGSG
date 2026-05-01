@@ -21,10 +21,8 @@ export default async function handler(req, res) {
 
     console.log('📤 Sending to SLIP webhook...');
 
-    // Link WhatsApp Admin
     const adminWaLink = 'https://wa.me/6288223055352';
 
-    // STEP 1: Kirim Embed (TANPA gambar dulu)
     const embed = {
       title: '💳 TRANSAKSI SELESAI',
       description: '✅ Pembayaran telah dikonfirmasi',
@@ -67,13 +65,10 @@ export default async function handler(req, res) {
 
     console.log('✅ SLIP Embed sent');
 
-    // STEP 2: Kirim Gambar (jika ada)
     if (proofImage) {
       try {
-        // Delay sedikit
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Parse base64
         const base64Match = proofImage.match(/^data:image\/[a-z]+;base64,(.+)$/);
         const base64Data = base64Match ? base64Match[1] : proofImage;
         
@@ -85,7 +80,6 @@ export default async function handler(req, res) {
           throw new Error('Buffer too small, invalid image');
         }
 
-        // Simple fetch dengan binary body
         const boundary = '----WebKitFormBoundary' + Math.random().toString(36);
         const formBody = 
           `--${boundary}\r\n` +
@@ -121,7 +115,6 @@ export default async function handler(req, res) {
       } catch (err) {
         console.error('SLIP Image error:', err.message);
         
-        // Fallback notification
         await fetch(DISCORD_WEBHOOK_SLIP, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
