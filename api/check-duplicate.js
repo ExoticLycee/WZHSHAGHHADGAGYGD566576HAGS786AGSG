@@ -1,8 +1,5 @@
-// Simple in-memory storage (untuk demo)
-// Untuk production, gunakan Redis atau database
 const recentOrders = new Map();
 
-// Cleanup old orders setiap 30 menit
 setInterval(() => {
   const now = Date.now();
   for (const [key, timestamp] of recentOrders.entries()) {
@@ -30,7 +27,6 @@ export default async function handler(req, res) {
     const orderKey = `${phone}-${amount}`;
     const now = Date.now();
     
-    // Check jika order ini sudah ada dalam 30 menit terakhir
     if (recentOrders.has(orderKey)) {
       const lastOrderTime = recentOrders.get(orderKey);
       const timeDiff = (now - lastOrderTime) / 1000 / 60; // dalam menit
@@ -44,7 +40,6 @@ export default async function handler(req, res) {
       }
     }
     
-    // Simpan order baru
     recentOrders.set(orderKey, now);
     
     return res.status(200).json({ 
