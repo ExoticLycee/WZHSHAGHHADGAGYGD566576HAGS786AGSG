@@ -21,15 +21,12 @@ export default async function handler(req, res) {
 
     console.log('📤 Sending to ORDER webhook...');
 
-    // Format items
     const itemsText = cartData.map(item => 
       `${item.quantity}x **${item.name}** - Rp ${(item.price * item.quantity).toLocaleString('id-ID')}`
     ).join('\n');
 
-    // Format WhatsApp link customer
     const customerWaLink = `https://wa.me/${customerData.phone}`;
 
-    // STEP 1: Kirim Embed (TANPA gambar dulu)
     const embed = {
       title: '🛒 PEMBELIAN BARU - WarpahExploits',
       color: 0x00ff88,
@@ -79,13 +76,10 @@ export default async function handler(req, res) {
 
     console.log('✅ Embed sent');
 
-    // STEP 2: Kirim Gambar (jika ada)
     if (proofImage) {
       try {
-        // Delay sedikit agar tidak rate limit
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Parse base64
         const base64Match = proofImage.match(/^data:image\/[a-z]+;base64,(.+)$/);
         const base64Data = base64Match ? base64Match[1] : proofImage;
         
@@ -97,7 +91,6 @@ export default async function handler(req, res) {
           throw new Error('Buffer too small, invalid image');
         }
 
-        // Simple fetch dengan binary body
         const boundary = '----WebKitFormBoundary' + Math.random().toString(36);
         const formBody = 
           `--${boundary}\r\n` +
